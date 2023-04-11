@@ -22,4 +22,4 @@ codecB: codecB.c codec.h
 	$(CC) $(FLAGS) -o libcodecB.so $(SH) $(FPIC) codecB.c
 
 clean:
-	rm -f
+	rm -f *.so encode decode

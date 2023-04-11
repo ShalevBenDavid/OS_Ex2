@@ -8,12 +8,24 @@
 int main(int argc, char* argv[]) {
     // If there isn't exactly 3 arguments, exit.
     if (argc != 3) {
-        fprintf("(-) Not the right format.\n");
+        printf("(-) Not the right format.\n");
         exit(EXIT_FAILURE);
     }
 
+    // Save the library name.
+    char* lib_name = (char*) malloc(5 + strlen(argv[1]));
+    if (!(lib_name)) {
+        printf("(-) Failed to save the library name.\n");
+        free(lib_name);
+        exit(EXIT_FAILURE);
+    }
+    strcat(lib_name, "./lib");
+    strcat(lib_name, argv[1]);
+    strcat(lib_name, ".so");
+
     // Load the dynamic library.
-    void *lib = dlopen(strcat("./", strcat(argv[1], ".so")), RTLD_NOW);
+    void *lib = dlopen(lib_name, RTLD_NOW);
+    free(lib_name);
     // Print in case of an error.
     if (!(lib)) {
         fprintf(stderr, "(-) Error in opening library: %s\n", dlerror());
