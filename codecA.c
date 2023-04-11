@@ -1,8 +1,12 @@
 // Created by Shalev Ben David and Ron Shuster.
 #include <stdio.h>
+#include "codec.h"
 
-// ****************** Encode A String ******************
-void encodeA (char* str) {
+/**
+ * Prints str after encoding it (covert all lower case chars to upper case, and all upper case to lower case).
+ * @param str - The string we want to encode.
+ */
+void encode (char* str) {
     char* temp = str;
     // While we aren't in the end of the string.
     while (*temp) {
@@ -17,8 +21,12 @@ void encodeA (char* str) {
     puts(str);
 }
 
-// ****************** Decode A String ******************
-void decodeA (char* str) {
+/**
+ * Prints str after decoding it (covert all lower case chars to upper case, and all upper case to lower case).
+ * For that, we can use encodeA again.
+ * @param str - The string we want to decode.
+ */
+void decode (char* str) {
     // Activating encode again is the same as decoding.
     encode(str);
 }
