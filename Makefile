@@ -11,7 +11,7 @@ all: cmp codecA codecB encode decode
 cmp: cmp.c
 	$(CC) $(FLAGS) cmp.c -o cmp
 encode: encode.c
-	$(CC) $(FLAGS) encode.c -L. -l codecA -l codecB -o encdoe
+	$(CC) $(FLAGS) encode.c -L. -l codecA -l codecB -o encode
 	export LD_LIBRARY_PATH=.
 decode: decode.c
 	$(CC) $(FLAGS) decode.c -L. -l codecA -l codecB -o decode

@@ -20,30 +20,27 @@ int main (int argc, char* argv[]) {
     }
 
     // Calling compare method and returning its return value.
-    return compare(file1, file2, argc, *argv);
+    if (compare(file1, file2, argc, *argv) == 1) {
+        printf("distinct");
+    }
+    else {
+        printf("equal");
+    }
 }
 
 int compare (FILE* file1, FILE* file2, int argc, char* argv) {
-    if (argc == 4) {
-        puts(&argv[3]);
-    }
 
     // Setting the file's indexes to the start.
     fseek(file1, 0, SEEK_SET);
     fseek(file2, 0, SEEK_SET);
 
-    // Initialize 2 chars to the start of each file.
-    char c1 = fgetc(file1);
-    char c2 = fgetc(file2);
+    // Creating 2 chars to iterate over each file.
+    char c1 = 0;
+    char c2 = 0;
 
     // While we didn't finished both files, compare them.
-    while ((c1 != EOF) && (c2 != EOF)) {
-        if (c1 != c2) {
-            return EXIT_FAILURE;
-        }
-        // Get next char in each file.
-        c1 = fgetc(file1);
-        c2 = fgetc(file2);
+    while (((c1 = fgetc(file1)) != EOF) || ((c2 = fgetc(file2)) != EOF)) {
+        if (c1 != c2) { return EXIT_FAILURE; }
     }
     // Check both file ended in the same time.
     if (c1 == EOF && c2 == EOF) {

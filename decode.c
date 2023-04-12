@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Save the library name.
-    char* lib_name = (char*) malloc(8 + strlen(argv[1]));
+    char* lib_name = (char*) calloc(8 + strlen(argv[1]), sizeof(char));
     if (!(lib_name)) {
         printf("(-) Failed to save the library name.\n");
         free(lib_name);
