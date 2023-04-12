@@ -8,6 +8,8 @@ SH = -shared
 all: cmp codecA codecB encode decode
 
 #Creating Programs (tools)
+copy:copy.c
+	$(CC) $(FLAGS) copy.c -o copy
 cmp: cmp.c
 	$(CC) $(FLAGS) cmp.c -o cmp
 encode: encode.c
