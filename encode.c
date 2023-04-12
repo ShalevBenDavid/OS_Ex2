@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
-#include "codec.h"
 
 int main(int argc, char* argv[]) {
     // If there isn't exactly 3 arguments, exit.
@@ -13,7 +12,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Save the library name.
-    char* lib_name = (char*) malloc(5 + strlen(argv[1]));
+    char* lib_name = (char*) malloc(8 + strlen(argv[1]));
     if (!(lib_name)) {
         printf("(-) Failed to save the library name.\n");
         free(lib_name);
@@ -24,11 +23,11 @@ int main(int argc, char* argv[]) {
     strcat(lib_name, ".so");
 
     // Load the dynamic library.
-    void *lib = dlopen(lib_name, RTLD_NOW);
+    void* lib = dlopen(lib_name, RTLD_NOW);
     free(lib_name);
     // Print in case of an error.
     if (!(lib)) {
-        fprintf(stderr, "(-) Error in opening library: %s\n", dlerror());
+        printf("(-) Error in opening library: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
 
@@ -36,7 +35,7 @@ int main(int argc, char* argv[]) {
     void (*encode)(char*) = dlsym(lib, "encode");
     // Print in case of an error.
     if (!(encode)) {
-        fprintf(stderr, "(-) Error in linking encode function: %s\n", dlerror());
+        printf("(-) Error in linking encode function: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
 
@@ -45,7 +44,7 @@ int main(int argc, char* argv[]) {
 
     // Closing the library. Printing in case of an error.
     if (dlclose(lib)) {
-        fprintf(stderr, "(-) Error in closing library: %s\n", dlerror());
+        printf("(-) Error in closing library: %s\n", dlerror());
         exit(EXIT_FAILURE);
     }
 

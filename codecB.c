@@ -28,7 +28,7 @@ void decode (char* str) {
     // While we aren't in the end of the string.
     while (*temp) {
         // Subtract 3 from the ascii value.
-        *temp += 3;
+        *temp -= 3;
         // Iterate to the next char.
         temp++;
     }

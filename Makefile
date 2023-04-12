@@ -5,9 +5,11 @@ FLAGS = -Wall -g
 FPIC = -fpic
 SH = -shared
 
-all: codecA codecB encode decode
+all: cmp codecA codecB encode decode
 
 #Creating Programs (tools)
+cmp: cmp.c
+	$(CC) $(FLAGS) cmp.c -o cmp
 encode: encode.c
 	$(CC) $(FLAGS) encode.c -L. -l codecA -l codecB -o encdoe
 	export LD_LIBRARY_PATH=.
@@ -22,4 +24,4 @@ codecB: codecB.c codec.h
 	$(CC) $(FLAGS) -o libcodecB.so $(SH) $(FPIC) codecB.c
 
 clean:
-	rm -f *.so encode decode
+	rm -f *.so cmp encode decode
