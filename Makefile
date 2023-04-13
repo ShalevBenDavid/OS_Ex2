@@ -5,7 +5,7 @@ FLAGS = -Wall -g
 FPIC = -fpic
 SH = -shared
 
-all: cmp codecA codecB encode decode
+all: copy cmp codecA codecB encode decode
 
 #Creating Programs (tools)
 copy:copy.c
@@ -26,4 +26,4 @@ codecB: codecB.c codec.h
 	$(CC) $(FLAGS) -o libcodecB.so $(SH) $(FPIC) codecB.c
 
 clean:
-	rm -f *.so cmp encode decode
+	rm -f *.so copy cmp encode decode
