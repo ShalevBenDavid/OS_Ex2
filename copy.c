@@ -12,8 +12,9 @@ int copy(FILE*, FILE*);
 int main (int argc, char* argv[]) {
     //  If there isn't at least 3 arguments, exit.
     if (argc < 3) {
-        printf("(-) Not the right format.\n");
-        exit(EXIT_FAILURE);
+        printf("(-) Not the right format. The format is \"./copy <file1> <file2> -v -f\" where"
+               " v and f flags are optional.\n");
+        return 1;
     }
 
     // Initialize 2 ints to hold the flags.
@@ -79,10 +80,10 @@ int copy(FILE* file1, FILE* file2){
     fseek(file1, 0, SEEK_SET);
 
     // While there is more bytes to read -> write them to the second file.
-    while ((bytes_read = fread(buffer,sizeof(char),MAX_BYTES,file1)) > 0) {
-        bytes_written = fwrite(buffer,sizeof(char),bytes_read,file2);
+    while ((bytes_read = fread(buffer, sizeof(char), MAX_BYTES, file1)) > 0) {
+        bytes_written = fwrite(buffer, sizeof(char), bytes_read, file2);
         // If we wrote less than we read, there is an error.
-        if(bytes_written < bytes_read) {
+        if (bytes_written < bytes_read) {
             fclose(file1);
             fclose(file2);
             return EXIT_FAILURE;
