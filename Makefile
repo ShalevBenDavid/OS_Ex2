@@ -13,11 +13,9 @@ copy:copy.c
 cmp: cmp.c
 	$(CC) $(FLAGS) cmp.c -o cmp
 encode: encode.c
-	$(CC) $(FLAGS) encode.c -L. -l codecA -l codecB -o encode
-	export LD_LIBRARY_PATH=.
+	$(CC) $(FLAGS) encode.c -o encode
 decode: decode.c
-	$(CC) $(FLAGS) decode.c -L. -l codecA -l codecB -o decode
-	export LD_LIBRARY_PATH=.
+	$(CC) $(FLAGS) decode.c -o decode
 
 #Creating 2 Shared Libraries
 codecA: codecA.c codec.h
