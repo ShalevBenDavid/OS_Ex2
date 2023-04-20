@@ -1,21 +1,23 @@
 .PHONY = all clean
 #Defining Macros
 CC = gcc
-FLAGS = -Wall -g
+FLAGS = -Wall -g0
 FPIC = -fpic
 SH = -shared
 
-all: copy cmp codecA codecB encode decode
+all: stshell copy cmp codecA codecB encode decode
 
 #Creating Programs (tools)
-copy:copy.c
+stshell: stshell.c
+	$(CC) $(FLAGS) stshell.c -o stshell
+copy: copy.c
 	$(CC) $(FLAGS) copy.c -o copy
 cmp: cmp.c
 	$(CC) $(FLAGS) cmp.c -o cmp
 encode: encode.c
-	$(CC) $(FLAGS) encode.c -o encode
+	$(CC) $(FLAGS) encode.c -o encode -ldl
 decode: decode.c
-	$(CC) $(FLAGS) decode.c -o decode
+	$(CC) $(FLAGS) decode.c -o decode -ldl
 
 #Creating 2 Shared Libraries
 codecA: codecA.c codec.h
@@ -24,4 +26,4 @@ codecB: codecB.c codec.h
 	$(CC) $(FLAGS) -o libcodecB.so $(SH) $(FPIC) codecB.c
 
 clean:
-	rm -f *.so copy cmp encode decode
+	rm -f *.so stshell copy cmp encode decode
