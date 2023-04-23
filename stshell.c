@@ -6,11 +6,19 @@
 #include <string.h>
 #include <stdbool.h>
 
+// A function which is called whenever the user enters ctrl + C to stop running tool.
+void signal_handler() {
+    printf(" User pressed Ctrl + C. If you want to exit shell, enter \"exit\".\n");
+};
+
 int main() {
     int i;
-    char *argv[10];
+    char *argv[256];
     char command[1024];
     char *token;
+
+    // Ignore signals (like ctrl+c).
+    signal(SIGINT, signal_handler);
 
     // Endless loop.
     while (true) {
@@ -40,11 +48,8 @@ int main() {
 
         // If user wants to exit shell.
         if (strcmp(argv[0], "exit") == 0) {
-            return 0;
+            return EXIT_SUCCESS;
         }
-
-        // Ignore signals (like ctrl+c).
-        signal(SIGINT, SIG_IGN);
 
         // Use fork to create a new process and save the process id.
         pid_t pid = fork();
@@ -61,11 +66,12 @@ int main() {
             // User wants to redirect and overwrite with ">".
             if (strcmp(argv[i - 2], ">") == 0) {
                 // Save the left command (command till the ">").
-                char *left_command[10];
+                char* left_command[i - 2];
                 for (int j = 0; j < i - 2; j++) {
                     left_command[j] = argv[j];
                 }
-                // Creating a file pointer to argb[i-1] in write mode.
+                left_command[i - 2] = NULL;
+                // Creating a file pointer to arv[i-1] in write mode.
                 FILE* file = fopen(argv[i - 1], "w");
                 if (!file) {
                     perror("(-) Failed to open file.\n");
@@ -79,6 +85,9 @@ int main() {
                 fclose(file);
                 // Run the left command.
                 execvp(left_command[0], left_command);
+                // If command failed.
+                perror("(-) Error in executing command.");
+                exit(EXIT_FAILURE);
             }
             else if (strcmp(argv[i - 2], ">>") == 0) {
                 // Save the left command (command till the ">").
@@ -86,6 +95,7 @@ int main() {
                 for (int j = 0; j < i - 2; j++) {
                     left_command[j] = argv[j];
                 }
+                left_command[i - 2] = NULL;
                 // Creating a file pointer to argb[i-1] in append mode.
                 FILE* file = fopen(argv[i - 1], "a");
                 if (!file) {
@@ -100,9 +110,15 @@ int main() {
                 fclose(file);
                 // Run the left command.
                 execvp(left_command[0], left_command);
+                // If command failed.
+                perror("(-) Error in executing command.");
+                exit(EXIT_FAILURE);
             }
             else {
                 execvp(argv[0], argv);
+                // If command failed.
+                perror("(-) Error in executing command.");
+                exit(EXIT_FAILURE);
             }
         }
         // If this is the parent process, wait for the child process to terminate and return exit status.
