@@ -58,20 +58,20 @@ int main() {
             // Don't ignore signals (like ctrl+c).
             signal(SIGINT, SIG_DFL);
             // User wants to redirect and overwrite with ">".
-//            if (strcmp(argv[1], ">") == 0) {
-//                // Creating a file pointer to argv[2].
-//                FILE* file = fopen(argv[2], "w");
-//                if (!file) {
-//                    perror("(-) Failed to open file.\n");
-//                    exit(EXIT_FAILURE);
-//                }
-//                // Obtain the file descriptor.
-//                int fd = fileno(file);
-//                // Redirect the standard output to out file.
-//                dup2(STDOUT_FILENO, fd);
-//                // Run the command.
-//                execv(argv[0], argv);
-//            }
+            if (strcmp(argv[strlen(command) - 3], ">") == 0) {
+                // Creating a file pointer to argv[2].
+                FILE* file = fopen(argv[strlen(command) - 2], "w");
+                if (!file) {
+                    perror("(-) Failed to open file.\n");
+                    exit(EXIT_FAILURE);
+                }
+                // Obtain the file descriptor.
+                int fd = fileno(file);
+                // Redirect the standard output to out file.
+                dup2(STDOUT_FILENO, fd);
+                // Run the command.
+                execv(argv[0], argv);
+            }
             execvp(argv[0], argv);
         }
         // If this is the parent process, wait for the child process to terminate and return exit status.
