@@ -57,22 +57,53 @@ int main() {
         else if (pid == 0) {
             // Don't ignore signals (like ctrl+c).
             signal(SIGINT, SIG_DFL);
+
             // User wants to redirect and overwrite with ">".
-            if (strcmp(argv[strlen(command) - 3], ">") == 0) {
-                // Creating a file pointer to argv[2].
-                FILE* file = fopen(argv[strlen(command) - 2], "w");
+            if (strcmp(argv[i - 2], ">") == 0) {
+                // Save the left command (command till the ">").
+                char *left_command[10];
+                for (int j = 0; j < i - 2; j++) {
+                    left_command[j] = argv[j];
+                }
+                // Creating a file pointer to argb[i-1] in write mode.
+                FILE* file = fopen(argv[i - 1], "w");
                 if (!file) {
                     perror("(-) Failed to open file.\n");
                     exit(EXIT_FAILURE);
                 }
                 // Obtain the file descriptor.
                 int fd = fileno(file);
-                // Redirect the standard output to out file.
-                dup2(STDOUT_FILENO, fd);
-                // Run the command.
-                execv(argv[0], argv);
+                // Redirect the standard output to our file.
+                dup2(fd, STDOUT_FILENO);
+                // Close the file descriptor.
+                fclose(file);
+                // Run the left command.
+                execvp(left_command[0], left_command);
             }
-            execvp(argv[0], argv);
+            else if (strcmp(argv[i - 2], ">>") == 0) {
+                // Save the left command (command till the ">").
+                char *left_command[i - 2];
+                for (int j = 0; j < i - 2; j++) {
+                    left_command[j] = argv[j];
+                }
+                // Creating a file pointer to argb[i-1] in append mode.
+                FILE* file = fopen(argv[i - 1], "a");
+                if (!file) {
+                    perror("(-) Failed to open file.\n");
+                    exit(EXIT_FAILURE);
+                }
+                // Obtain the file descriptor.
+                int fd = fileno(file);
+                // Redirect the standard output to our file.
+                dup2(fd, STDOUT_FILENO);
+                // Close the file descriptor.
+                fclose(file);
+                // Run the left command.
+                execvp(left_command[0], left_command);
+            }
+            else {
+                execvp(argv[0], argv);
+            }
         }
         // If this is the parent process, wait for the child process to terminate and return exit status.
         wait(NULL);
