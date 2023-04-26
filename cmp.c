@@ -56,8 +56,8 @@ int compare (FILE* file1, FILE* file2, bool i_flag) {
     fseek(file2, 0, SEEK_SET);
 
     // Initialize 2 chars to the start of each file.
-    wchar_t c1 = getc(file1);
-    wchar_t c2 = getc(file2);
+    wchar_t c1 = fgetc(file1);
+    wchar_t c2 = fgetc(file2);
 
     // While we didn't finished both files, compare them.
     while ((c1 != EOF) && (c2 != EOF)) {
@@ -68,8 +68,8 @@ int compare (FILE* file1, FILE* file2, bool i_flag) {
         }
         if (c1 != c2) { return EXIT_FAILURE; }
         // Get the next char in each file.
-        c1 = getc(file1);
-        c2 = getc(file2);
+        c1 = fgetc(file1);
+        c2 = fgetc(file2);
     }
 
     // Check both file ended in the same time.

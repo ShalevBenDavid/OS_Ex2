@@ -14,7 +14,7 @@ int main (int argc, char* argv[]) {
     if (argc < 3) {
         printf("(-) Not the right format. The format is \"./copy <file1> <file2> -v -f\" where"
                " v and f flags are optional.\n");
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // Initialize 2 ints to hold the flags.
@@ -23,8 +23,22 @@ int main (int argc, char* argv[]) {
 
     // Checking if the user set one or both of the flags.
     for (int i = 0; i < argc; i++) {
-        if (strcmp("-v",argv[i]) == 0) { v_flag = true; }
-        if (strcmp("-f",argv[i]) == 0) { f_flag = true; }
+        if (strcmp("-v", argv[i]) == 0) {
+            if (i < 3) {
+                printf("(-) Not the right format. The format is \"./copy <file1> <file2> -v -f\" where"
+                       " v and f flags are optional.\n");
+                return EXIT_FAILURE;
+            }
+            v_flag = true;
+        }
+        if (strcmp("-f", argv[i]) == 0) {
+            if (i < 3) {
+                printf("(-) Not the right format. The format is \"./copy <file1> <file2> -v -f\" where"
+                       " v and f flags are optional.\n");
+                return EXIT_FAILURE;
+            }
+            f_flag = true;
+        }
     }
 
     // Getting the target file's name.
