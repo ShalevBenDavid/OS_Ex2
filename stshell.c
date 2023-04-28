@@ -5,6 +5,8 @@
 #include "unistd.h"
 #include <string.h>
 #include <stdbool.h>
+#include <fcntl.h>
+
 
 // A function which is called whenever the user enters ctrl + C to stop running tool.
 void signal_handler() {
@@ -40,14 +42,14 @@ void redirect_execute (char** argv, char* permission, int index) {
     // If there is no file to output to, then print error.
     if (!argv[index + 1]) {
         perror("(-) Redirect Failed. Missing file.\n");
-        exit(EXIT_FAILURE);
+        return;
     }
 
     // Creating a file pointer to the file to the right of the sign with the appropriate permission.
     FILE* file = fopen(argv[index + 1], permission);
     if (!file) {
         perror("(-) Failed to open file.\n");
-        exit(EXIT_FAILURE);
+        return;
     }
     // Obtain the file descriptor.
     int fd = fileno(file);
@@ -79,96 +81,104 @@ void redirect_execute (char** argv, char* permission, int index) {
         perror("(-) Failed to execute command.");
         exit(EXIT_FAILURE);
     }
-    // If this is the parent process, wait for the child process to terminate and return exit status.
+    // If this is the parent process, wait for the child process to terminate
     wait(NULL);
 }
 
 // A function that execute redirect command.
 void pipe_execute (char** argv, int pipe_count, int redirect1, int redirect2) {
     // If there is no file to output to in case of redirect, then print error.
-    if (!argv[redirect1 + 1] || !argv[redirect2 + 1]) {
+    if ((redirect1 != -1 && !argv[redirect1 + 1]) || (redirect2 != -1 && !argv[redirect2 + 1])) {
         perror("(-) Redirect Failed. Missing file.\n");
-        exit(EXIT_FAILURE);
+        return;
     }
 
     // In case of redirection, open the output file in the appropriate permission.
+    int fd_redirect = -1;
     if (redirect1 != -1 || redirect2 != -1) {
-        FILE* file = NULL;
-        if (redirect1 != -1)
+        FILE *file = NULL;
+        if (redirect1 != -1) {
             file = fopen(argv[redirect1 + 1], "w");
-        else
-            file = fopen(argv[redirect2 + 1], "a");
-        if (!file) {
-        perror("(-) Failed to open file.\n");
-        exit(EXIT_FAILURE);
+            argv[redirect1] = NULL;
+        } else {
+            file = fopen(argv[redirect2 + 1], "a+");
+            argv[redirect2] = NULL;
         }
-    // Obtain the file descriptor.
-    int fd_output = fileno(file);
+        if (!file) {
+            perror("(-) Failed to open file.\n");
+            return;
+        }
+        // Obtain the file descriptor.
+        fd_redirect = fileno(file);
     }
 
-    //Create a Matrix 2x2 (size 4) of file descriptors.
-    int fd[2][2];
-
+    // Create a Matrix 2x2 (size 4) of file descriptors.
+    int pipes[2][2];
     for (int i = 0; i < pipe_count; i++) {
         // Create a pipe.
-        if (pipe(fd[i]) == -1) {
+        if (pipe(pipes[i]) == -1) {
             perror("(-) Failed to create pipe.\n");
             exit(EXIT_FAILURE);
         }
     }
 
     int index = 0;
+
     for (int i = 0; i <= pipe_count; i++) {
-        // Create new array to store command till pipe appears.
-        int new_index = 0;
-        char* left_command[256];
-        while (argv[index]) {
-            // If we encountered a pipe, break loop.
-            if (!strcmp(argv[index], "|"))
-                break;
-            // Copy command.
-            left_command[new_index++] = argv[index];
-            index++;
+        char *command[1024];
+        int temp_index = 0;
+        while (argv[index] != NULL && strcmp(argv[index], "|")) {
+            if (index == redirect1 || index == redirect2)
+                index++;
+            command[temp_index++] = argv[index++];
         }
-        left_command[new_index] = NULL;
-        // iterate over the pipe.
+        // End command with null.
+        command[temp_index] = NULL;
+        // Skip the pipeline "|".
         index++;
-        //printf("%d %s", index, *left_command);
-        // Use fork to create a new process and save the process id.
+
         pid_t pid = fork();
-        // If fork failed, print it.
-        if (pid == -1) {
-            perror("(-) Fork command failed.\n");
-        }
-        // If this is the child, execute command accordingly.
-        else if (pid == 0) {
-            // Don't ignore signals (like ctrl+c).
-            signal(SIGINT, SIG_DFL);
-            if (i != 0)
-                // Redirect the output.
-                dup2(fd[i][0], STDIN_FILENO);
-            if (i != pipe_count) {
-                // Redirect the output.
-                dup2(fd[i][1], STDOUT_FILENO);
+        if (pid == 0) {
+            if (i == 1)
+                dup2(pipes[0][0], STDIN_FILENO);
+            if (i == 2)
+                dup2(pipes[1][0], STDIN_FILENO);
+            if (i != pipe_count){
+                if (i == 0)
+                    dup2(pipes[0][1], STDOUT_FILENO);
+                else
+                    dup2(pipes[1][1], STDOUT_FILENO);
             }
+            // Else, if there is redirection.
+            else if (fd_redirect != -1)
+                dup2(fd_redirect, STDOUT_FILENO);
+
             // Close pipes.
-            close(fd[i][0]);
-            close(fd[i][1]);
-            // Run the left command.
-            execvp(left_command[0], left_command);
-            // If command failed.
-            perror("(-) Failed to execute command.\n");
+            for (int j = 0; j < pipe_count; j++)
+                for (int k = 0; k <= 1; k++)
+                    close(pipes[j][k]);
+
+            // If there was redirect, close his file descriptor.
+            if (fd_redirect != -1)
+                close(fd_redirect);
+
+            // Execute command.
+            execvp(command[0], command);
+            perror("Error executing command");
             exit(EXIT_FAILURE);
         }
-        else
-            wait(NULL);
-        // Close pipes.
-        for (int i = 0; i < pipe_count; i++) {
-            for (int j = 0; j <= 1; j++)
-                close(fd[i][j]);
-        }
-
     }
+    // Close pipes.
+    for (int j = 0; j < pipe_count; j++)
+        for (int k = 0; k <= 1; k++)
+            close(pipes[j][k]);
+
+    if (fd_redirect != -1)
+        close(fd_redirect);
+
+    // Wait for the child process to terminate.
+    for (int i = 0; i <= pipe_count; i++)
+        wait(NULL);
 }
 
 
@@ -244,7 +254,7 @@ int main() {
                 perror("(-) Failed to execute command.\n");
                 exit(EXIT_FAILURE);
             }
-            // If this is the parent process, wait for the child process to terminate and return exit status.
+            // If this is the parent process, wait for the child process to terminate.
             wait(NULL);
         }
     }
